@@ -17,10 +17,13 @@ namespace SMW_Rewrite.Scripts.Scenes {
             mario = new MarioActor(new System.Numerics.Vector2(start.X, Raylib.GetScreenHeight() - (start.Y * Statics.tileScaleFactor) - 100));
 
         }
-        protected override UIElement[] OnUpdate() {
+        protected override UIElement[] OnUpdate() { //TODO: add parallex bg
+            mario.isOnGround = false;
+            mario.walkingRight = Raylib.IsKeyDown(KeyboardKey.A);
+            bool triedJump = Raylib.IsKeyDown(KeyboardKey.Space);
             float delta = Raylib.GetFrameTime();
             Rectangle marioBounds = mario.GetBounds();
-            Rectangle groundRect = new(marioBounds.X, marioBounds.Y + marioBounds.Height, marioBounds.Width, 1);
+            Rectangle groundRect = new(marioBounds.X, marioBounds.Y + marioBounds.Height, marioBounds.Width, 1f);
             Level.Area area = level.areas[curArea];
             Raylib.ClearBackground(new(0, 100, 200, 0)); //Hardcoding for now
 
@@ -29,8 +32,23 @@ namespace SMW_Rewrite.Scripts.Scenes {
                 tiles[item.layer].Add(item);
             }
             Vector2 force = Vector2.Zero;
-            force.Y += mario.gravity_nojump * delta;
-            force.X += (Raylib.IsKeyDown(KeyboardKey.A) ? mario.walk_speed : (Raylib.IsKeyDown(KeyboardKey.D) ? -mario.walk_speed : 0)) * delta;
+            force.Y += triedJump ? mario.gravity_jumping : mario.gravity_nojump;
+            force.X += mario.walkingRight ? -mario.speed : mario.speed;
+
+            float accel;
+            float decel;
+            float maxSpeed;
+            accel = mario.walk_accel;
+            decel = mario.walk_decel;
+            maxSpeed = Raylib.IsKeyDown(KeyboardKey.LeftShift) ? mario.run_speed :mario.walk_speed;
+
+            if (Raylib.IsKeyDown(KeyboardKey.D) || mario.walkingRight) {
+                if (mario.speed < maxSpeed) mario.speed += accel * delta;
+            } else {
+                Console.WriteLine("decelerating!");
+                mario.speed -= decel * delta;
+            }
+            mario.speed = Math.Max(mario.speed, 0);
 
             int i = 0;
             foreach (var tileList in tiles) {
@@ -38,8 +56,9 @@ namespace SMW_Rewrite.Scripts.Scenes {
                     GameTile gt = Statics.GetTileById(tile.tileId);
                     Vector2 pos = new(0 + (tile.x * Statics.tileScaleFactor), Raylib.GetScreenHeight() - (tile.y * Statics.tileScaleFactor));
                     System.Drawing.Point p = gt.sprites[0];
-                    if (force.Y != 0 && Statics.CheckCollision(groundRect,gt.GetVertices(pos.X,pos.Y),gt.shape)) {
+                    if (Statics.CheckCollision(groundRect,gt.GetVertices(pos.X,pos.Y),gt.shape)) {
                         mario.isOnGround = true;
+                        mario.jumpFrames = 0;
                         force.Y = 0;
                     }
                     Raylib.DrawTextureEx(Statics.mainTiles.GetTile(p.X, p.Y), pos, 0, Statics.generalScaleFactor, Color.White);
@@ -49,8 +68,14 @@ namespace SMW_Rewrite.Scripts.Scenes {
                 }
                 i++;
             }
-            marioBounds.Y += force.Y;
-            marioBounds.X += force.X;
+
+            if (mario.isOnGround && triedJump && mario.jumpFrames < 120) { //TODO: fix jumping
+                force.Y -= mario.jump_speed + mario.jump_speed_incr * (Math.Abs(force.X*delta));
+                mario.jumpFrames++;
+            }
+
+            marioBounds.Y += force.Y * delta;
+            marioBounds.X += force.X * delta;
             mario.SetBounds(marioBounds);
 
             return base.OnUpdate();

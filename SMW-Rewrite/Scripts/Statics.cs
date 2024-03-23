@@ -170,13 +170,13 @@ namespace SMW_Rewrite.Scripts {
         public static bool CheckCollision(Raylib_cs.Rectangle collider1, Vector2[] shapeVertices, RenderShape shapeType) {
             List<Vector2> axes = [];
 
-            axes.Add(new Vector2(1, 0));
-            axes.Add(new Vector2(0, 1));
+            axes.Add(new(1, 0));
+            axes.Add(new(0, 1));
 
             if (shapeType == RenderShape.Triangle) {
                 for (int i = 0; i < 3; i++) {
                     Vector2 edge = shapeVertices[(i + 1) % 3] - shapeVertices[i];
-                    axes.Add(new Vector2(-edge.Y, edge.X));
+                    axes.Add(new(-edge.Y, edge.X));
                 }
             }
 
@@ -184,11 +184,11 @@ namespace SMW_Rewrite.Scripts {
                 float minPlayer = float.PositiveInfinity;
                 float maxPlayer = float.NegativeInfinity;
                 foreach (Vector2 vertex in new Vector2[] {
-                    new(collider1.X, collider1.Y),
-                    new(collider1.X + collider1.Width, collider1.Y),
-                    new(collider1.X, collider1.Y + collider1.Height),
-                    new(collider1.X + collider1.Width, collider1.Y + collider1.Height)
-                }) {
+            new(collider1.X, collider1.Y),
+            new(collider1.X + collider1.Width, collider1.Y),
+            new(collider1.X, collider1.Y + collider1.Height),
+            new(collider1.X + collider1.Width, collider1.Y + collider1.Height)
+        }) {
                     float projection = Vector2.Dot(vertex, axis);
                     minPlayer = Math.Min(minPlayer, projection);
                     maxPlayer = Math.Max(maxPlayer, projection);
