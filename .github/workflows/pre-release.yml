@@ -13,10 +13,6 @@ jobs:
     name: "Pre Release"
     runs-on: "ubuntu-latest"
 
-    strategy:
-      matrix:
-        os: [win-x64, osx-x64, linux-x64]
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
@@ -30,10 +26,18 @@ jobs:
         run: |
           version=$(grep -oP '<Version>\K[^<]+' ${GITHUB_REPOSITORY##*/}/${GITHUB_REPOSITORY##*/}.csproj)
           echo "::set-output name=project_version::$version"
-      - name: "Build"
+      - name: "Build & test for Windows"
         run: |
-          dotnet publish -c Release -r ${{ matrix.os }}
-          zip -j win.zip ${GITHUB_REPOSITORY##*/}/bin/Release/net8.0/${{ matrix.os }}/*
+          dotnet publish -c Release -r win-x64
+          zip -j win.zip ${GITHUB_REPOSITORY##*/}/bin/Release/net8.0/win-x64/*
+      - name: "Build & test for macOS"
+        run: |
+          dotnet publish -c Release -r osx-x64
+          zip -j macos.zip ${GITHUB_REPOSITORY##*/}/bin/Release/net8.0/osx-x64/*
+      - name: "Build & test for Linux"
+        run: |
+          dotnet publish -c Release -r linux-x64
+          zip -j linux.zip ${GITHUB_REPOSITORY##*/}/bin/Release/net8.0/linux-x64/*
       - name: Release
         id: create_release
         uses: softprops/action-gh-release@v2
