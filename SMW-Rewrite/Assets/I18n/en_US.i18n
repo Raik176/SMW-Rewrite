@@ -1,0 +1,48 @@
+ui.debug.header=Debug Menu
+ui.debug.data="""
+File size (compressed): %0B
+Compressed: %1
+Data size (uncompressed): %2B
+Level version: %3
+Level ID: %4
+Level Name: %5
+Level Tilemap Count: %6
+Level Area Count: %7
+"""
+ui.debug.areaData="""
+Area Version: %0
+Area ID: %1
+Area Theme: %2
+Area Size X: %3
+Area Size Y: %4
+Area Tile Count: %5
+Area Mario Start: %6
+"""
+
+ui.title.editor=Level Editor
+ui.title.levels=Level
+ui.title.levelui=Loaded Level
+ui.title.mods=Mods
+ui.title.settings=Settings
+ui.title.quit=Quit
+ui.title.copyright=© Nintendo %0-%1 All assets used are owned by Nintendo®
+
+ui.editor.tiles=Tiles
+ui.editor.properties=Properties
+ui.editor.properties.global=Global
+ui.editor.properties.tile=Tile
+ui.editor.properties.area=Area
+ui.editor.layer=Layer
+ui.editor.id=ID
+ui.editor.id.ttp=Has to be unique and equal to the filename.
+ui.editor.name=Name
+ui.editor.name.ttp=Not required. If set will show instead of the level id.
+ui.editor.compress=Compress Output?
+ui.editor.compress.ttp="""
+Wether the output .lvl file should be 
+compressed, may save space.
+"""
+ui.editor.metadata=Include metadata?
+ui.editor.metadata.ttp="""
+Wether to include metadata, like author, a description and possibly version.
+"""

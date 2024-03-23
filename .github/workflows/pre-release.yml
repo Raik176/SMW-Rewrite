@@ -1,0 +1,48 @@
+name: "pre-release"
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  pre-release:
+    name: "Pre Release"
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        os: [win-x64, osx-x64, linux-x64]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install zip
+        run: sudo apt-get install zip
+      - name: Read Project Version
+        id: read_version
+        run: |
+          version=$(grep -oP '<Version>\K[^<]+' ${GITHUB_REPOSITORY##*/}/${GITHUB_REPOSITORY##*/}.csproj)
+          echo "::set-output name=project_version::$version"
+      - name: "Build"
+        run: |
+          dotnet publish -c Release -r ${{ matrix.os }}
+          zip -j win.zip ${GITHUB_REPOSITORY##*/}/bin/Release/net8.0/${{ matrix.os }}/*
+      - name: Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          make_latest: true
+          tag_name: "v${{ steps.read_version.outputs.project_version }}"
+          files: |
+            LICENSE.txt
+            win.zip
+            linux.zip
+            macos.zip
