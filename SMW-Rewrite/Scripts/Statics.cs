@@ -3,6 +3,7 @@ using SMW_Rewrite.Scripts.Level;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO.Compression;
+using System.Numerics;
 
 namespace SMW_Rewrite.Scripts {
     internal static class Statics {
@@ -10,6 +11,8 @@ namespace SMW_Rewrite.Scripts {
         public static readonly byte[] fileSignature = GenerateFileSignature();
         public static readonly ReadOnlyCollection<Level.GameTile> tiles;
         public static readonly Tilesheet mainTiles;
+        public static readonly int generalScaleFactor = 4;
+        public static readonly int tileScaleFactor = 16 * generalScaleFactor;
         static Statics() {
             normal = LoadEmbeddedFont("SMW_Rewrite.Assets.Fonts.Normal.ttf");
             List<Level.GameTile> tiles = [
@@ -24,7 +27,7 @@ namespace SMW_Rewrite.Scripts {
             ];
 
             Statics.tiles = new ReadOnlyCollection<Level.GameTile>(tiles);
-            mainTiles = LoadEmbeddedTilesheet("SMW_Rewrite.Assets.plains.png",16);
+            mainTiles = LoadEmbeddedTilesheet("SMW_Rewrite.Assets.plains.png", 16);
         }
 
         public static Level.GameTile GetTileById(string id) {
@@ -41,7 +44,7 @@ namespace SMW_Rewrite.Scripts {
             byte[] bytes = new byte[stream.Length];
             stream.Read(bytes, 0, bytes.Length);
 
-            Font font = Raylib.LoadFontFromMemory(Path.GetExtension(resourceName), bytes,32, [], 0);
+            Font font = Raylib.LoadFontFromMemory(Path.GetExtension(resourceName), bytes, 32, [], 0);
 
             return font;
         }
@@ -163,6 +166,47 @@ namespace SMW_Rewrite.Scripts {
                 }
             }
         }
+
+        public static bool CheckCollision(Raylib_cs.Rectangle collider1, Vector2[] shapeVertices, RenderShape shapeType) {
+            List<Vector2> axes = [];
+
+            axes.Add(new Vector2(1, 0));
+            axes.Add(new Vector2(0, 1));
+
+            if (shapeType == RenderShape.Triangle) {
+                for (int i = 0; i < 3; i++) {
+                    Vector2 edge = shapeVertices[(i + 1) % 3] - shapeVertices[i];
+                    axes.Add(new Vector2(-edge.Y, edge.X));
+                }
+            }
+
+            foreach (Vector2 axis in axes) {
+                float minPlayer = float.PositiveInfinity;
+                float maxPlayer = float.NegativeInfinity;
+                foreach (Vector2 vertex in new Vector2[] {
+                    new(collider1.X, collider1.Y),
+                    new(collider1.X + collider1.Width, collider1.Y),
+                    new(collider1.X, collider1.Y + collider1.Height),
+                    new(collider1.X + collider1.Width, collider1.Y + collider1.Height)
+                }) {
+                    float projection = Vector2.Dot(vertex, axis);
+                    minPlayer = Math.Min(minPlayer, projection);
+                    maxPlayer = Math.Max(maxPlayer, projection);
+                }
+
+                float minShape = float.PositiveInfinity;
+                float maxShape = float.NegativeInfinity;
+                foreach (Vector2 vertex in shapeVertices) {
+                    float projection = Vector2.Dot(vertex, axis);
+                    minShape = Math.Min(minShape, projection);
+                    maxShape = Math.Max(maxShape, projection);
+                }
+
+                if (!(maxPlayer >= minShape && maxShape >= minPlayer)) return false;
+            }
+
+            return true;
+        }
     }
 
     namespace Level {
@@ -193,7 +237,7 @@ namespace SMW_Rewrite.Scripts {
             public string theme = "";
             public int sizeX;
             public int sizeY;
-            public System.Drawing.Point marioStart;
+            public Point marioStart;
             public List<LevelTile> tiles = [];
 
             //optional too
@@ -207,24 +251,45 @@ namespace SMW_Rewrite.Scripts {
             public Dictionary<string, string>? tileData;
         }
         public class GameTile {
-            public string tileId;
-            public string tilesheet;
-            public Point[] sprites;
-            public int fps;
-            
-            public GameTile(string id, Point[] sprites, string tilesheet, int fps) {
+            public readonly string tileId;
+            public readonly string tilesheet;
+            public readonly Point[] sprites;
+            public readonly int fps;
+            public readonly RenderShape shape;
+
+            public GameTile(string id, Point[] sprites, string tilesheet, int fps) : this(id, sprites, tilesheet, fps, RenderShape.Rectangle) {
+
+            }
+            public GameTile(string id, Point[] sprites, string tilesheet, int fps, RenderShape shape) {
                 this.tileId = id;
                 this.tilesheet = tilesheet;
                 this.sprites = sprites;
                 this.fps = fps;
+                this.shape = shape;
+            }
+
+            public Vector2[] GetVertices(float x, float y) {
+                switch (shape) {
+                    case RenderShape.Rectangle:
+                        return [
+                            new(x,y),
+                            new(x + 16,y),
+                            new(x + 16, y + 16),
+                            new(x, y + 16)
+                            ];
+                    case RenderShape.Triangle:
+                        return [
+                            new (x,y),
+                            new(x + 16,y),
+                            new(x + 16 / 2, y + 16)
+                            ];
+                }
+                return [];
             }
         }
-        public class MarioTile {
-            public int x;
-            public int y;
-            public int layer;
-            public Point[] sprites = [];
-            public int fps;
+        public enum RenderShape {
+            Rectangle,
+            Triangle
         }
     }
 }

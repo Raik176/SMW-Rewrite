@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace SMW_Rewrite.Scripts {
     static internal class I18n {

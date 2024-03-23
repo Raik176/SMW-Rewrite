@@ -95,7 +95,7 @@ namespace SMW_Rewrite.Scripts.UI {
         }
 
         public override void Destroy() {
-            
+
         }
     }
 }

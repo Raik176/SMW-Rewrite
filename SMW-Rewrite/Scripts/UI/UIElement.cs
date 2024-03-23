@@ -30,6 +30,14 @@ namespace SMW_Rewrite.Scripts.UI {
         }
 
         /// <summary>
+        /// Returns the current bounds.
+        /// <returns>The bounds</returns>
+        /// </summary>
+        public Rectangle GetBounds() {
+            return bounds;
+        }
+
+        /// <summary>
         /// Updates & renders the UI element.
         /// </summary>
         public void Update() {

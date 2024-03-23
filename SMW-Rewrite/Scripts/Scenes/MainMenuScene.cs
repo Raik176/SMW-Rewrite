@@ -13,7 +13,7 @@ namespace SMW_Rewrite.Scripts.Scenes {
             int centerX = (Raylib.GetScreenWidth() - icon.Width) / 2;
             Raylib.DrawTextureEx(icon, new Vector2(centerX, Raylib.GetScreenHeight() * 0.1f), 0, 0.75f, Color.White);
 
-            UIButton levelEditor = new(new Rectangle(centerX, Raylib.GetScreenHeight() * 0.45f, 100, 30), I18n.GetValue("ui.title.editor"), 18, Color.Red, default,Statics.normal);
+            UIButton levelEditor = new(new Rectangle(centerX, Raylib.GetScreenHeight() * 0.45f, 100, 30), I18n.GetValue("ui.title.editor"), 18, Color.Red, default, Statics.normal);
             levelEditor.TextColor(Color.Black).CenterHorizontally().Clicked += delegate {
                 Program.LoadScene(new IngameScene());
             };

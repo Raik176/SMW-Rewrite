@@ -2,7 +2,6 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SMW_Rewrite.Scripts.UI;
 
 namespace SMW_Rewrite.Scripts {
     internal class Tilesheet {
@@ -21,12 +20,12 @@ namespace SMW_Rewrite.Scripts {
             for (int y = 0; y < tilesHigh; y++) {
                 for (int x = 0; x < tilesWide; x++) {
                     Image<Rgba32> tile = img.Clone();
-                    tile.Mutate(ctx => ctx.Crop(new SixLabors.ImageSharp.Rectangle(x * tileSize,y * tileSize,tileSize,tileSize)));
+                    tile.Mutate(ctx => ctx.Crop(new SixLabors.ImageSharp.Rectangle(x * tileSize, y * tileSize, tileSize, tileSize)));
 
                     using MemoryStream stream = new();
                     tile.SaveAsPng(stream);
 
-                    Raylib_cs.Image raylibImg = Raylib.LoadImageFromMemory(".png",stream.ToArray());
+                    Raylib_cs.Image raylibImg = Raylib.LoadImageFromMemory(".png", stream.ToArray());
                     tiles[x, y] = Raylib.LoadTextureFromImage(raylibImg);
                     Raylib.UnloadImage(raylibImg);
                 }

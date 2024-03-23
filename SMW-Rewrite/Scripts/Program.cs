@@ -8,7 +8,7 @@ class Program {
     public static void Main() {
         Raylib.SetConfigFlags(ConfigFlags.BorderlessWindowMode);
         Raylib.InitWindow(Raylib.GetScreenWidth(), Raylib.GetScreenHeight(), "Super Mario World - PC Edition"); //800,480
-        Raylib.SetTargetFPS(60);
+        //Raylib.SetTargetFPS(60);
 
         LoadScene(new MainMenuScene());
 
